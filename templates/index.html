@@ -2,45 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Organizer</title>
-    <style>
-        body { background-color: #1e1e2f; color: #fff; font-family: "Segoe UI", sans-serif; }
-        h1 { color: #90EE90; }
-        .tab { background-color: #2e2e44; margin: 5px; padding: 10px; border-radius: 5px; }
-        .tab-selected { background-color: #4e4e90; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 5px 0; padding: 5px; background-color: #2e2e44; border-radius: 5px; }
-    </style>
+    <title>🎓 Student Help Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>🎓 Student Organizer</h1>
+<div class="container">
+    <h1>🎓 Student Help Study</h1>
 
-    <div class="tab">
-        <h2>Tasks</h2>
-        <ul>
+    <div class="tabs">
+        <button class="tablink" onclick="openTab('Tasks')">Tasks</button>
+        <button class="tablink" onclick="openTab('Notes')">Notes</button>
+        <button class="tablink" onclick="openTab('Timer')">Timer</button>
+        <button class="tablink" onclick="openTab('StudyChat')">🤖 Study Chat</button>
+    </div>
+
+    <div id="Tasks" class="tabcontent">
+        <input type="text" id="taskInput" placeholder="Add new task...">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList">
             {% for t in tasks %}
-                <li>{{ loop.index }}. {{ t }}</li>
+            <li>{{ t }} <button onclick="deleteTask({{ loop.index0 }})">Delete</button></li>
             {% endfor %}
         </ul>
     </div>
 
-    <div class="tab">
-        <h2>Notes</h2>
-        <ul>
+    <div id="Notes" class="tabcontent">
+        <input type="text" id="noteInput" placeholder="Add a note...">
+        <button onclick="addNote()">Add Note</button>
+        <ul id="noteList">
             {% for n in notes %}
-                <li>{{ loop.index }}. {{ n }}</li>
+            <li>{{ n }} <button onclick="deleteNote({{ loop.index0 }})">Delete</button></li>
             {% endfor %}
         </ul>
     </div>
 
-    <div class="tab">
-        <h2>Timer</h2>
-        <p>Set your timer in the desktop app version!</p>
+    <div id="Timer" class="tabcontent">
+        <label>Minutes:</label>
+        <input type="number" id="minuteInput" value="25" min="1" max="180">
+        <div id="timerLabel">25:00</div>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="stopTimer()">Stop</button>
+        <button onclick="resetTimer()">Reset</button>
     </div>
 
-    <div class="tab">
-        <h2>🤖 Study Chat</h2>
-        <p>Ask questions in the desktop version with Groq AI integration.</p>
+    <div id="StudyChat" class="tabcontent">
+        <select id="chatMode">
+            <option>Explain Concept</option>
+            <option>Generate Quiz</option>
+            <option>Study Guide</option>
+            <option>Summarize My Notes</option>
+            <option>Help with Notes</option>
+            <option>Free Chat</option>
+        </select>
+        <input type="text" id="chatInput" placeholder="Ask a question or enter a topic...">
+        <button onclick="sendChat()">📤 Send</button>
+        <div id="chatOutput"></div>
     </div>
+</div>
+
+<script>
+    function openTab(tabName) {
+        const tabs = document.getElementsByClassName("tabcontent");
+        for (let t of tabs) t.style.display = "none";
+        document.getElementById(tabName).style.display = "block";
+    }
+    openTab('Tasks');
+
+    async function addTask() {
+        const val = document.getElementById("taskInput").value;
+        const res = await fetch("/add_task", {method:"POST", body:new URLSearchParams({task: val})});
+        document.getElementById("taskInput").value="";
+        location.reload();
+    }
+
+    async function deleteTask(idx) {
+        await fetch("/delete_task", {method:"POST", body:new URLSearchParams({index: idx})});
+        location.reload();
+    }
+
+    async function addNote() {
+        const val = document.getElementById("noteInput").value;
+        const res = await fetch("/add_note", {method:"POST", body:new URLSearchParams({note: val})});
+        document.getElementById("noteInput").value="";
+        location.reload();
+    }
+
+    async function deleteNote(idx) {
+        await fetch("/delete_note", {method:"POST", body:new URLSearchParams({index: idx})});
+        location.reload();
+    }
+
+    // Timer placeholder
+    let timerSeconds = 25*60, timerInterval;
+    function updateTimerLabel() {
+        const mins = Math.floor(timerSeconds/60);
+        const secs = timerSeconds%60;
+        document.getElementById("timerLabel").innerText = `${mins.toString().padStart(2,"0")}:${secs.toString().padStart(2,"0")}`;
+    }
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerSeconds = parseInt(document.getElementById("minuteInput").value)*60;
+        timerInterval = setInterval(()=>{timerSeconds--; updateTimerLabel(); if(timerSeconds<=0) clearInterval(timerInterval);},1000);
+    }
+    function stopTimer(){clearInterval(timerInterval);}
+    function resetTimer(){stopTimer(); timerSeconds = parseInt(document.getElementById("minuteInput").value)*60; updateTimerLabel();}
+
+    function sendChat() {
+        const input = document.getElementById("chatInput").value;
+        const mode = document.getElementById("chatMode").value;
+        document.getElementById("chatOutput").innerHTML += `<div>📝 You (${mode}): ${input}</div>`;
+        document.getElementById("chatInput").value="";
+        // For now, just simulate AI response
+        setTimeout(()=>{document.getElementById("chatOutput").innerHTML+=`<div>🤖 ChatBot: This is a placeholder response.</div>`;},500);
+    }
+</script>
 </body>
 </html>

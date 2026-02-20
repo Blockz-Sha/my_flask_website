@@ -1,0 +1,15 @@
+body { background-color:#1e1e2f; color:#fff; font-family:Segoe UI, sans-serif; }
+.container { max-width: 900px; margin:auto; padding:20px; }
+h1 { text-align:center; }
+input, select, button { padding:5px; margin:5px; border-radius:5px; border:none; }
+input, select { background-color:#2e2e44; color:#fff; }
+button { background-color:#4e4e90; color:#fff; cursor:pointer; }
+button:hover { background-color:#6060aa; }
+ul { list-style:none; padding:0; }
+ul li { padding:5px; margin:5px 0; background:#2e2e44; border-radius:5px; display:flex; justify-content:space-between; }
+.tabs { display:flex; justify-content:center; margin-bottom:10px; }
+.tablink { background:#2e2e44; color:#fff; margin:2px; padding:8px 12px; border-radius:5px; cursor:pointer; border:none; }
+.tablink:hover { background:#4e4e90; }
+.tabcontent { display:none; padding:10px; background:#1e1e2f; border-radius:5px; margin-top:5px; }
+#chatOutput { max-height:300px; overflow-y:auto; background:#2e2e44; padding:10px; border-radius:5px; }
+#timerLabel { font-size:40px; text-align:center; margin:10px 0; }
