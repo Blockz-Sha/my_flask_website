@@ -13,17 +13,15 @@ def home():
 @app.route('/query_groq', methods=['POST'])
 def query_groq():
     query = request.form.get('query')
-
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}"
-    }
-
+    headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
     response = requests.get(
         f"https://api.groq.com/query?query={query}",
         headers=headers
     )
-
     return response.json()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Get the port from environment variable Render provides
+    port = int(os.environ.get("PORT", 5000))
+    # Listen on all interfaces
+    app.run(host="0.0.0.0", port=port)
