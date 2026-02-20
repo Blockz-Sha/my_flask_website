@@ -1,15 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Study App</title>
+<meta charset="UTF-8">
+<title>🎓 Student Help Study</title>
+<style>
+body { background:#1e1e2f; color:#fff; font-family:Segoe UI; margin:0; padding:0; }
+.container { width: 900px; margin:auto; padding:20px; }
+h1 { text-align:center; color:#90EE90; }
+input, button, select, textarea { border-radius:5px; padding:5px; margin:2px; }
+input, select, textarea { background:#2e2e44; color:#fff; border:none; }
+button { background:#4e4e90; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#6060b0; }
+.task, .note { padding:5px; background:#2e2e44; margin:2px 0; border-radius:5px; }
+.done { text-decoration:line-through; color:#90EE90; }
+textarea { width:100%; height:100px; }
+</style>
+<script>
+async function addTask() {
+    let val = document.getElementById('taskInput').value;
+    if(!val) return;
+    let res = await fetch('/add_task',{method:'POST',body:new URLSearchParams({'task':val})});
+    document.getElementById('taskInput').value='';
+    location.reload();
+}
+
+async function toggleTask(idx, el){
+    let done = el.checked;
+    await fetch('/update_task',{method:'POST',body:new URLSearchParams({'index':idx,'done':done})});
+    location.reload();
+}
+
+async function deleteTask(idx){
+    await fetch('/delete_task',{method:'POST',body:new URLSearchParams({'index':idx})});
+    location.reload();
+}
+
+async function addNote(){
+    let val = document.getElementById('noteInput').value;
+    if(!val) return;
+    await fetch('/add_note',{method:'POST',body:new URLSearchParams({'note':val})});
+    document.getElementById('noteInput').value='';
+    location.reload();
+}
+
+async function deleteNote(idx){
+    await fetch('/delete_note',{method:'POST',body:new URLSearchParams({'index':idx})});
+    location.reload();
+}
+
+async function sendChat(){
+    let msg = document.getElementById('chatInput').value;
+    let mode = document.getElementById('chatMode').value;
+    if(!msg) return;
+    let res = await fetch('/chat',{method:'POST',body:new URLSearchParams({'message':msg,'mode':mode})});
+    let data = await res.json();
+    document.getElementById('chatOutput').value += "🤖 "+data.response+"\n--------------------\n";
+    document.getElementById('chatInput').value='';
+}
+</script>
 </head>
 <body>
-    <h1>My Study Website</h1>
+<div class="container">
+<h1>🎓 Student Help Study</h1>
 
-    <form action="/query_groq" method="POST">
-        <input type="text" name="query" placeholder="Ask something..." required>
-        <button type="submit">Send</button>
-    </form>
+<h2>Tasks</h2>
+<input id="taskInput" placeholder="Add new task">
+<button onclick="addTask()">Add Task</button>
+<ul>
+{% for idx, t in enumerate(tasks) %}
+<li class="task {% if t.done %}done{% endif %}">
+<input type="checkbox" {% if t.done %}checked{% endif %} onchange="toggleTask({{idx}},this)"> {{t.text}}
+<button onclick="deleteTask({{idx}})">Delete</button>
+</li>
+{% endfor %}
+</ul>
 
+<h2>Notes</h2>
+<input id="noteInput" placeholder="Add note">
+<button onclick="addNote()">Add Note</button>
+<ul>
+{% for idx, n in enumerate(notes) %}
+<li class="note">{{n}} <button onclick="deleteNote({{idx}})">Delete</button></li>
+{% endfor %}
+</ul>
+
+<h2>Study Chat 🤖</h2>
+<select id="chatMode">
+<option>Explain Concept</option>
+<option>Generate Quiz</option>
+<option>Study Guide</option>
+<option>Summarize My Notes</option>
+<option>Help with Notes</option>
+<option>Free Chat</option>
+</select>
+<input id="chatInput" placeholder="Type a question...">
+<button onclick="sendChat()">Send</button>
+<textarea id="chatOutput" readonly></textarea>
+
+</div>
 </body>
 </html>
