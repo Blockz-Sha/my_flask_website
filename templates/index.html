@@ -2,120 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎓 Student Help Study</title>
+    <title>Flask AI Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>
-        function showTab(tabName) {
-            const tabs = document.querySelectorAll('.tab-content');
-            const tabButtons = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-        }
-
-        function addTask() {
-            const input = document.getElementById('task-input');
-            const text = input.value.trim();
-            if (!text) return;
-            const li = document.createElement('li');
-            li.textContent = text;
-            document.getElementById('task-list').appendChild(li);
-            input.value = '';
-        }
-
-        function addNote() {
-            const input = document.getElementById('note-input');
-            const text = input.value.trim();
-            if (!text) return;
-            const li = document.createElement('li');
-            li.textContent = text;
-            document.getElementById('note-list').appendChild(li);
-            input.value = '';
-        }
-
-        async function sendChat() {
-            const input = document.getElementById('chat-input');
-            const output = document.getElementById('chat-output');
-            const mode = document.getElementById('chat-mode').value;
-            const text = input.value.trim();
-            if (!text) return;
-            output.value += `📝 You: ${text}\n`;
-            input.value = '';
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: text, mode: mode})
-            });
-            const data = await response.json();
-            output.value += `🤖 ChatBot: ${data.response}\n-----------------------------\n`;
-            output.scrollTop = output.scrollHeight;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            showTab('tasks');
-        });
-    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>🎓 Student Help Study</h1>
-        <div class="tabs">
-            <div class="tab active" data-tab="tasks" onclick="showTab('tasks')">Tasks</div>
-            <div class="tab" data-tab="notes" onclick="showTab('notes')">Notes</div>
-            <div class="tab" data-tab="timer" onclick="showTab('timer')">Timer</div>
-            <div class="tab" data-tab="chat" onclick="showTab('chat')">🤖 Study Chat</div>
-        </div>
-
-        <!-- TASKS TAB -->
-        <div id="tasks" class="tab-content active">
-            <div class="input-row">
-                <input type="text" id="task-input" placeholder="Add new task...">
-                <button onclick="addTask()">Add Task</button>
-            </div>
-            <ul id="task-list"></ul>
-        </div>
-
-        <!-- NOTES TAB -->
-        <div id="notes" class="tab-content">
-            <div class="input-row">
-                <input type="text" id="note-input" placeholder="Add a note...">
-                <button onclick="addNote()">Add Note</button>
-            </div>
-            <ul id="note-list"></ul>
-        </div>
-
-        <!-- TIMER TAB -->
-        <div id="timer" class="tab-content">
-            <label>Minutes:
-                <input type="number" id="timer-minutes" value="25" min="1" max="180">
-            </label>
-            <div id="timer-display">25:00</div>
-            <div class="timer-buttons">
-                <button onclick="startTimer()">Start</button>
-                <button onclick="stopTimer()">Stop</button>
-                <button onclick="resetTimer()">Reset</button>
-            </div>
-        </div>
-
-        <!-- STUDY CHAT TAB -->
-        <div id="chat" class="tab-content">
-            <label for="chat-mode">Select Mode:</label>
-            <select id="chat-mode">
-                <option>Explain Concept</option>
-                <option>Generate Quiz</option>
-                <option>Study Guide</option>
-                <option>Summarize My Notes</option>
-                <option>Help with Notes</option>
-                <option>Free Chat</option>
-            </select>
-            <div class="input-row">
-                <input type="text" id="chat-input" placeholder="Ask a question or enter a topic...">
-                <button onclick="sendChat()">📤 Send</button>
-            </div>
-            <textarea id="chat-output" readonly></textarea>
-        </div>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input id="user-input" placeholder="Type your message..."/>
+        <button onclick="sendMessageHandler()">Send</button>
     </div>
+
+    <script>
+        async function sendMessageHandler() {
+            const input = document.getElementById("user-input");
+            const msg = input.value;
+            input.value = "";
+
+            const msgDiv = document.createElement("div");
+            msgDiv.textContent = "You: " + msg;
+            document.getElementById("messages").appendChild(msgDiv);
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({message: msg})
+                });
+                const data = await response.json();
+
+                const replyDiv = document.createElement("div");
+                replyDiv.textContent = "AI: " + data.reply;
+                document.getElementById("messages").appendChild(replyDiv);
+            } catch (e) {
+                const errorDiv = document.createElement("div");
+                errorDiv.textContent = "Error: " + e;
+                document.getElementById("messages").appendChild(errorDiv);
+            }
+        }
+    </script>
 </body>
 </html>
